@@ -10,45 +10,53 @@ class MathCalculator {
     required int n,
   }) {
     try {
-      // Calculate nth term
+      // Calculate nth term and sum
       final double nthTermValue = a + (n - 1) * d;
-
-      // Calculate sum of n terms
       final double sumValue = (n / 2) * (2 * a + (n - 1) * d);
 
-      // Generate LaTeX formulas
-      final String nthTermFormulaLatex = r'a_n = a + (n-1)d';
-      final String sumFormulaLatex = 'S_n = \\frac{n}{2}(2a + (n-1)d)';
+      // LaTeX formulas for flutter_math_fork (no dollar signs)
+      final String nthTermFormulaLatex = r'a_n = a + (n - 1) d';
+      final String sumFormulaLatex =
+          r'S_n = \frac{n}{2} \bigl(2a + (n - 1) d\bigr)';
 
-      // Generate step-by-step solution
+      // Build step-by-step solution
       final StringBuffer steps = StringBuffer();
+      steps.writeln('Given: a = $a, d = $d, n = $n');
+      steps.writeln('\n--- Nth Term Calculation ---');
+      steps.writeln('Formula: $nthTermFormulaLatex');
       steps.writeln(
-        "Given: First term (a) = $a, Common difference (d) = $d, Term number (n) = $n",
+        r'Substitute: a_' +
+            n.toString() +
+            ' = ' +
+            a.toString() +
+            ' + (' +
+            (n - 1).toString() +
+            ') * ' +
+            d.toString(),
       );
-      steps.writeln("\n--- Nth Term Calculation ---");
       steps.writeln(
-        "The formula for the nth term of an arithmetic sequence is: \$a_n = a + (n-1)d\$",
+        r'a_' + n.toString() + ' = ' + nthTermValue.toStringAsFixed(4),
       );
-      steps.writeln("Substitute the given values: \$a_{$n} = $a + ($n-1)$d\$");
-      steps.writeln("\$a_{$n} = $a + ${(n - 1) * d}\$");
-      steps.writeln("\$a_{$n} = $nthTermValue\$");
 
-      steps.writeln("\n--- Sum of N Terms Calculation ---");
+      steps.writeln('\n--- Sum of N Terms Calculation ---');
+      steps.writeln('Formula: ' + sumFormulaLatex);
       steps.writeln(
-        "The formula for the sum of the first n terms of an arithmetic sequence is: \$S_n = \\frac{n}{2}(2a + (n-1)d)\$",
+        r'Substitute: S_' +
+            n.toString() +
+            ' = \frac{' +
+            n.toString() +
+            '}{2} (2*' +
+            a.toString() +
+            ' + (' +
+            (n - 1).toString() +
+            ')*' +
+            d.toString() +
+            ')',
       );
-      steps.writeln(
-        "Substitute the given values: \$S_{$n} = \\frac{$n}{2}(2($a) + ($n-1)$d)\$",
-      );
-      steps.writeln("\$S_{$n} = \\frac{$n}{2}(${2 * a} + ${(n - 1) * d})\$");
-      steps.writeln("\$S_{$n} = \\frac{$n}{2}(${2 * a + (n - 1) * d})\$");
-      steps.writeln("\$S_{$n} = $sumValue\$");
+      steps.writeln(r'S_' + n.toString() + ' = ' + sumValue.toStringAsFixed(4));
 
-      // Generate graph points
-      final List<double> graphPoints = [];
-      for (int i = 1; i <= n; i++) {
-        graphPoints.add(a + (i - 1) * d);
-      }
+      // Graph points
+      final List<double> graphPoints = List.generate(n, (i) => a + i * d);
 
       return SequenceResult(
         type: 'arithmetic',
@@ -60,9 +68,7 @@ class MathCalculator {
         graphPoints: graphPoints,
       );
     } catch (e) {
-      return SequenceResult.withError(
-        'Error calculating arithmetic sequence: $e',
-      );
+      return SequenceResult.withError('Error in arithmetic calculation: $e');
     }
   }
 
@@ -74,119 +80,88 @@ class MathCalculator {
     bool isInfinite = false,
   }) {
     try {
-      double nthTermValue;
-      String nthTermFormulaLatex = 'a_n = ar^{n-1}';
-      if (!isInfinite) {
-        nthTermValue = a * pow(r, n - 1);
-      } else {
-        nthTermValue = double.nan; // Not applicable for infinite series
-      }
+      // Nth term
+      final String nthTermFormulaLatex = r'a_n = a r^{n - 1}';
+      final double? nthTermValue = isInfinite ? null : a * pow(r, n - 1);
 
-      double sumValue;
-      String sumFormulaLatex;
+      // Sum logic
+      late double? sumValue;
+      late String sumFormulaLatex;
       if (isInfinite) {
         if (r.abs() < 1) {
           sumValue = a / (1 - r);
-          sumFormulaLatex = 'S_\\infty = \\frac{a}{1-r}';
+          sumFormulaLatex = r'S_∞ = \frac{a}{1 - r}';
         } else {
-          sumValue = double.infinity; // Diverges
-          sumFormulaLatex = 'S_\\infty \\text{ diverges if } |r| \\ge 1';
+          sumValue = null;
+          sumFormulaLatex = r'S_∞ diverges if |r| ≥ 1';
         }
       } else {
         if (r == 1) {
           sumValue = a * n;
-          sumFormulaLatex = 'S_n = n \\cdot a \\text{ (if r=1)}';
+          sumFormulaLatex = r'S_n = n · a';
         } else {
           sumValue = a * (1 - pow(r, n)) / (1 - r);
-          sumFormulaLatex = 'S_n = \\frac{a(1-r^n)}{1-r}';
+          sumFormulaLatex = r'S_n = \frac{a \bigl(1 - r^n\bigr)}{1 - r}';
         }
       }
 
-      // Generate step-by-step solution
+      // Steps
       final StringBuffer steps = StringBuffer();
-      steps.writeln("Given: First term (a) = $a, Common ratio (r) = $r");
+      steps.writeln('Given: a = $a, r = $r');
+      if (!isInfinite) steps.writeln('n = $n');
+
+      steps.writeln('\n--- Nth Term Calculation ---');
+      steps.writeln('Formula: $nthTermFormulaLatex');
       if (!isInfinite) {
-        steps.writeln("Term number (n) = $n");
+        steps.writeln(
+          r'Substitute: a_' +
+              n.toString() +
+              '=' +
+              a.toString() +
+              ' · ' +
+              r.toString() +
+              '^' +
+              (n - 1).toString(),
+        );
+        steps.writeln(
+          r'a_' + n.toString() + ' = ' + nthTermValue!.toStringAsFixed(4),
+        );
+      } else {
+        steps.writeln('Infinite series, nth term not applicable');
       }
 
-      steps.writeln("\n--- Nth Term Calculation ---");
-      steps.writeln(
-        "The formula for the nth term of a geometric sequence is: \$a_n = ar^{n-1}\$",
+      steps.writeln('\n--- Sum Calculation ---');
+      steps.writeln('Formula: ' + sumFormulaLatex);
+      if (sumValue != null) {
+        steps.writeln(r'S = ' + sumValue.toStringAsFixed(4));
+      } else {
+        steps.writeln('Series diverges');
+      }
+
+      // Graph points
+      final int limit = isInfinite ? 10 : n;
+      final List<double> graphPoints = List.generate(
+        limit,
+        (i) => a * pow(r, i),
       );
-      if (!isInfinite) {
-        steps.writeln(
-          "Substitute the given values: \$a_{$n} = $a \\cdot $r^{${n - 1}}\$",
-        );
-        steps.writeln("\$a_{$n} = $nthTermValue\$");
-      } else {
-        steps.writeln(
-          "Nth term calculation is not directly applicable for an infinite series in the same way as finite.",
-        );
-      }
-
-      steps.writeln("\n--- Sum Calculation ---");
-      if (isInfinite) {
-        if (r.abs() < 1) {
-          steps.writeln(
-            "For an infinite geometric series where \$|r| < 1\$, the sum is: \$S_\\infty = \\frac{a}{1-r}\$",
-          );
-          steps.writeln(
-            "Substitute the given values: \$S_\\infty = \\frac{$a}{1-$r}\$",
-          );
-          steps.writeln("\$S_\\infty = $sumValue\$");
-        } else {
-          steps.writeln(
-            "The infinite geometric series diverges because \$|r| \\ge 1\$.",
-          );
-          steps.writeln("Sum to infinity: Diverges");
-        }
-      } else {
-        steps.writeln(
-          "The formula for the sum of the first n terms of a geometric sequence is: \$S_n = \\frac{a(1-r^n)}{1-r}\$",
-        );
-        steps.writeln(
-          "Substitute the given values: \$S_{$n} = \\frac{$a(1-$r^{$n})}{1-$r}\$",
-        );
-        if (r == 1) {
-          steps.writeln(
-            "If r=1, \$S_n = n \\cdot a = $n \\cdot $a = $sumValue\$",
-          );
-        } else {
-          steps.writeln("\$S_{$n} = $sumValue\$");
-        }
-      }
-
-      // Generate graph points
-      final List<double> graphPoints = [];
-      int limit = n;
-      if (isInfinite) {
-        limit = 10; // Plot first 10 terms for visualization
-      }
-      for (int i = 1; i <= limit; i++) {
-        graphPoints.add(a * pow(r, i - 1));
-      }
 
       return SequenceResult(
         type: 'geometric',
         nthTermFormulaLatex: nthTermFormulaLatex,
-        nthTermValue: nthTermValue.isNaN
-            ? "N/A"
+        nthTermValue: nthTermValue == null
+            ? 'N/A'
             : nthTermValue.toStringAsFixed(4),
         sumFormulaLatex: sumFormulaLatex,
-        sumValue: sumValue.isInfinite
-            ? "Diverges"
-            : sumValue.toStringAsFixed(4),
+        sumValue: sumValue == null ? 'Diverges' : sumValue.toStringAsFixed(4),
         stepByStepSolution: steps.toString(),
         graphPoints: graphPoints,
       );
     } catch (e) {
-      return SequenceResult.withError(
-        'Error calculating geometric sequence: $e',
-      );
+      return SequenceResult.withError('Error in geometric calculation: $e');
     }
   }
 
-  // --- Sigma Notation Logic (Numerical Only) ---
+  // --- Sigma Notation Logic ---
   SequenceResult calculateSigmaNotation({
     required String expression,
     required String variable,
@@ -198,46 +173,35 @@ class MathCalculator {
       final StringBuffer steps = StringBuffer();
       final List<double> graphPoints = [];
 
-      steps.writeln(
-        "Given sum: \$\\sum_{$variable=$lowerBound}^{$upperBound} ($expression)\$",
-      );
-      steps.writeln(
-        "Expand the sum by substituting values from lower bound to upper bound:",
-      );
+      // LaTeX for sigma (no dollar signs)
+      final String sigmaFormulaLatex =
+          r'\sum_{' +
+          variable +
+          '=' +
+          lowerBound.toString() +
+          '}^{' +
+          upperBound.toString() +
+          '} (' +
+          expression.replaceAll(variable, variable) +
+          ')';
+
+      steps.writeln('Formula: $sigmaFormulaLatex');
+      steps.writeln('Expand and evaluate each term:');
 
       for (int i = lowerBound; i <= upperBound; i++) {
-        // Basic numerical evaluation: Replace variable with current value
-        // WARNING: This is a very basic and limited parser.
-        // For robust, secure, and complex expression parsing, consider a dedicated math expression parser library.
-        String currentExpression = expression.replaceAll(
+        final String currentExpr = expression.replaceAll(
           variable,
           i.toString(),
         );
-
-        // Attempt to evaluate the string expression.
-        // This is a simplified approach. For production, use a dedicated math expression evaluator.
-        // For example, you could use a package like 'math_expressions' or write a more robust parser.
-        // Here, we'll try a very basic evaluation for simple cases.
-        double termValue;
-        try {
-          // This is a highly simplified and potentially unsafe way to evaluate.
-          // It only works for very basic arithmetic.
-          // For example, "2*k+1" becomes "2*1+1"
-          // A real parser would build an AST and evaluate it.
-          termValue = _evaluateSimpleExpression(currentExpression);
-        } catch (e) {
-          return SequenceResult.withError(
-            'Error evaluating expression "$currentExpression": $e. Please use simple arithmetic (e.g., 2*k + 1).',
-          );
-        }
-
+        final double termValue = _evaluateSimpleExpression(currentExpr);
         totalSum += termValue;
         graphPoints.add(termValue);
-        steps.writeln("For \$$variable=$i\$: $currentExpression = $termValue");
+        steps.writeln(
+          '$variable = $i: $currentExpr = ${termValue.toStringAsFixed(4)}',
+        );
       }
 
-      steps.writeln("\nAdd the terms together:");
-      steps.writeln("Sum = $totalSum");
+      steps.writeln('\nSum = ${totalSum.toStringAsFixed(4)}');
 
       return SequenceResult(
         type: 'sigma',
@@ -246,63 +210,11 @@ class MathCalculator {
         graphPoints: graphPoints,
       );
     } catch (e) {
-      return SequenceResult.withError('Error calculating sigma notation: $e');
+      return SequenceResult.withError('Error in sigma notation: $e');
     }
   }
 
-  // Helper for very simple numerical expression evaluation (limited)
-  // This is NOT a robust math expression parser.
-  double _evaluateSimpleExpression(String expression) {
-    // Basic operations, order of operations not fully robust
-    // This is a placeholder. For real-world, use a package like `math_expressions`.
-    try {
-      expression = expression.replaceAll(' ', ''); // Remove spaces
-      // Handle multiplication and division first
-      while (expression.contains('*') || expression.contains('/')) {
-        RegExp exp = RegExp(r'(-?\d+\.?\d*)([*/])(-?\d+\.?\d*)');
-        var match = exp.firstMatch(expression);
-        if (match == null) break;
-        double num1 = double.parse(match.group(1)!);
-        double num2 = double.parse(match.group(3)!);
-        double result;
-        if (match.group(2) == '*') {
-          result = num1 * num2;
-        } else {
-          result = num1 / num2;
-        }
-        expression = expression.replaceFirst(
-          match.group(0)!,
-          result.toString(),
-        );
-      }
-      // Handle addition and subtraction
-      while (expression.contains('+') ||
-          (expression.contains('-') && expression.indexOf('-') != 0)) {
-        RegExp exp = RegExp(r'(-?\d+\.?\d*)([+\-])(-?\d+\.?\d*)');
-        var match = exp.firstMatch(expression);
-        if (match == null) break;
-        double num1 = double.parse(match.group(1)!);
-        double num2 = double.parse(match.group(3)!);
-        double result;
-        if (match.group(2) == '+') {
-          result = num1 + num2;
-        } else {
-          result = num1 - num2;
-        }
-        expression = expression.replaceFirst(
-          match.group(0)!,
-          result.toString(),
-        );
-      }
-      return double.parse(expression);
-    } catch (e) {
-      throw FormatException(
-        'Invalid expression format for simple evaluation: $expression',
-      );
-    }
-  }
-
-  // --- Recurrence Relation Logic (Iterative Only) ---
+  // --- Recurrence Relation Logic ---
   SequenceResult calculateRecurrence({
     required String recurrenceRelation,
     required Map<String, double> initialConditions,
@@ -313,103 +225,69 @@ class MathCalculator {
       final StringBuffer steps = StringBuffer();
       final List<double> graphPoints = [];
 
-      // Parse initial conditions
-      final Map<int, double> parsedInitialConditions = {};
-      for (var entry in initialConditions.entries) {
-        final String key = entry.key; // e.g., "a(0)", "a(1)"
-        final double value = entry.value;
-        final RegExpMatch? match = RegExp(r'a\((\d+)\)').firstMatch(key);
-        if (match != null && match.groupCount > 0) {
-          final int index = int.parse(match.group(1)!);
-          parsedInitialConditions[index] = value;
-          terms[index] = value;
-          steps.writeln("Initial condition: \$a($index) = $value\$");
+      // Record initial conditions
+      initialConditions.forEach((key, value) {
+        final match = RegExp(r'a\((\d+)\)').firstMatch(key);
+        if (match != null) {
+          final idx = int.parse(match.group(1)!);
+          terms[idx] = value;
+          steps.writeln('a($idx) = ${value.toStringAsFixed(4)}');
           graphPoints.add(value);
-        } else {
-          return SequenceResult.withError(
-            'Invalid initial condition key format: $key. Expected "a(index)".',
-          );
         }
-      }
+      });
 
-      final int startIndex = terms.keys.isEmpty
-          ? 0
-          : terms.keys.reduce(max) + 1;
-
-      // Iterate to calculate terms up to n
-      for (int i = startIndex; i <= n; i++) {
-        String currentRelation = recurrenceRelation;
-        bool canCalculate = true;
-
-        // Replace a(n-k) terms with their known values
-        final RegExp termRegex = RegExp(r'a\(n-(\d+)\)');
-        currentRelation = currentRelation.replaceAllMapped(termRegex, (match) {
-          final int offset = int.parse(match.group(1)!);
-          final int prevIndex = i - offset;
-          if (terms.containsKey(prevIndex)) {
-            return terms[prevIndex]!.toString();
-          } else {
-            canCalculate = false;
-            return ''; // Placeholder, as we'll mark as uncalculable
-          }
+      // Compute terms up to n
+      for (int i = 0; i <= n; i++) {
+        if (terms.containsKey(i)) continue;
+        String expr = recurrenceRelation;
+        expr = expr.replaceAll('a(n)', '').replaceAll('=', '').trim();
+        expr = expr.replaceAllMapped(RegExp(r'a\(n-(\d+)\)'), (m) {
+          final prev = i - int.parse(m.group(1)!);
+          return terms[prev]!.toString();
         });
-
-        if (!canCalculate) {
-          steps.writeln(
-            "Cannot calculate \$a($i)\$: Missing initial conditions for required previous terms.",
-          );
-          return SequenceResult(
-            type: 'recurrence',
-            nthTermValue: "Insufficient initial conditions",
-            stepByStepSolution: steps.toString(),
-            graphPoints: graphPoints,
-            error: "Insufficient initial conditions to calculate up to $n.",
-          );
-        }
-
-        // Replace 'a(n)' and '=' for evaluation
-        currentRelation = currentRelation
-            .replaceAll('a(n)', '')
-            .replaceAll('=', '')
-            .trim();
-
-        double termValue;
-        try {
-          // Evaluate the expression string
-          // WARNING: This is a simplified numerical evaluation.
-          // For a production app, use a robust math expression parser.
-          termValue = _evaluateSimpleExpression(currentRelation);
-        } catch (e) {
-          steps.writeln(
-            "Error evaluating \$a($i)\$: $e. Expression: $currentRelation",
-          );
-          return SequenceResult.withError(
-            'Error evaluating recurrence relation for term $i: $e',
-          );
-        }
-
-        terms[i] = termValue;
-        steps.writeln("\$a($i) = $currentRelation = $termValue\$");
-        graphPoints.add(termValue);
-      }
-
-      final double? finalNTermValue = terms[n];
-      if (finalNTermValue == null) {
-        return SequenceResult.withError(
-          'Could not calculate $n-th term. Check relation and initial conditions.',
-        );
+        final double val = _evaluateSimpleExpression(expr);
+        terms[i] = val;
+        steps.writeln('a($i) = $expr = ${val.toStringAsFixed(4)}');
+        graphPoints.add(val);
       }
 
       return SequenceResult(
         type: 'recurrence',
-        nthTermValue: finalNTermValue.toStringAsFixed(4),
+        nthTermValue: terms[n]!.toStringAsFixed(4),
         stepByStepSolution: steps.toString(),
         graphPoints: graphPoints,
       );
     } catch (e) {
-      return SequenceResult.withError(
-        'Error calculating recurrence relation: $e',
-      );
+      return SequenceResult.withError('Error in recurrence relation: $e');
     }
+  }
+
+  // --- Helper for simple expression evaluation ---
+  double _evaluateSimpleExpression(String expression) {
+    String expr = expression.replaceAll(' ', '');
+    // Handle * and /
+    while (expr.contains('*') || expr.contains('/')) {
+      final match = RegExp(
+        r'(-?\d+\.?\d*)([*/])(-?\d+\.?\d*)',
+      ).firstMatch(expr);
+      if (match == null) break;
+      final a = double.parse(match.group(1)!);
+      final b = double.parse(match.group(3)!);
+      final res = match.group(2) == '*' ? a * b : a / b;
+      expr = expr.replaceFirst(match.group(0)!, res.toString());
+    }
+    // Handle + and -
+    while (expr.contains('+') ||
+        (expr.contains('-') && !expr.startsWith('-'))) {
+      final match = RegExp(
+        r'(-?\d+\.?\d*)([+\-])(-?\d+\.?\d*)',
+      ).firstMatch(expr);
+      if (match == null) break;
+      final a = double.parse(match.group(1)!);
+      final b = double.parse(match.group(3)!);
+      final res = match.group(2) == '+' ? a + b : a - b;
+      expr = expr.replaceFirst(match.group(0)!, res.toString());
+    }
+    return double.parse(expr);
   }
 }
